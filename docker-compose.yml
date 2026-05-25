@@ -1,0 +1,35 @@
+services:
+  # 1. PostgreSQL - For General Data
+  postgres-db:
+    image: postgres:15
+    container_name: aiops-postgres
+    environment:
+      POSTGRES_USER: kamil
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: aiops_metadata
+    ports:
+      - "5432:5432"
+
+  # 2. InfluxDB 2.0 - For High-Speed Metrics
+  influxdb:
+    image: influxdb:2.7
+    container_name: aiops-influx
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=kamil
+      - DOCKER_INFLUXDB_INIT_PASSWORD=password12345
+      - DOCKER_INFLUXDB_INIT_ORG=my-org
+      - DOCKER_INFLUXDB_INIT_BUCKET=metrics-bucket
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-token
+
+  # 3. Grafana - To Visualize everything
+  grafana:
+    image: grafana/grafana:latest
+    container_name: aiops-grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres-db
+      - influxdb

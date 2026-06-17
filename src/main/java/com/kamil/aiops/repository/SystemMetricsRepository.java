@@ -1,6 +1,5 @@
 package com.kamil.aiops.repository;
 
-import com.kamil.aiops.entity.SystemMetrics;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

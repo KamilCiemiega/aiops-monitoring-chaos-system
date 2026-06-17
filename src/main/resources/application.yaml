@@ -18,8 +18,8 @@ spring:
     console:
       enabled: true
 
-  InfluxDB:
-    url: http://localhost:8086
-    token: my-super-secret-token
-    org: my-org
-    bucket: metrics-bucket
+influxdb:
+  url: http://localhost:8086
+  token: my-super-secret-token
+  org: my-org
+  bucket: metrics-bucket

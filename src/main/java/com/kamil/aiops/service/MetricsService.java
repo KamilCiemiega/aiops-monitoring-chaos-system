@@ -27,8 +27,9 @@ public class MetricsService {
     @Value("${influxdb.bucket}")
     private String bucket;
 
+    // CHANGED: Renamed variable to avoid package namespace collision
     @Value("${influxdb.org}")
-    private String org;
+    private String organization;
 
     public void saveMetric(MetricsDTO dto) {
         WriteApiBlocking writeApi = influxDBClient.getWriteApiBlocking();
@@ -40,7 +41,8 @@ public class MetricsService {
                 .time(Instant.now(), WritePrecision.MS);
 
         try {
-            writeApi.writePoint(bucket, org, point);
+            // CHANGED: Using the renamed variable
+            writeApi.writePoint(bucket, organization, point);
             log.debug("Metric written to InfluxDB for host: {}", dto.getHostname());
         } catch (Exception e) {
             log.error("Error writing to InfluxDB: {}", e.getMessage());
@@ -62,17 +64,19 @@ public class MetricsService {
         );
 
         QueryApi queryApi = influxDBClient.getQueryApi();
-        List<FluxTable> tables = queryApi.query(fluxQuery, org);
+
+        // CHANGED: Using the renamed variable
+        List<FluxTable> tables = queryApi.query(fluxQuery, organization);
         List<Double> ramValues = new ArrayList<>();
 
         for (FluxTable table : tables) {
             for (FluxRecord record : table.getRecords()) {
-
                 ramValues.add((Double) record.getValueByKey("_value"));
             }
         }
 
-        log.debug("Pobrano {} próbek RAM z InfluxDB dla hosta {}", ramValues.size(), hostname);
+        // CHANGED: Translated the log to English
+        log.debug("Fetched {} RAM samples from InfluxDB for host: {}", ramValues.size(), hostname);
         return ramValues;
     }
 }

@@ -30,6 +30,14 @@ services:
     container_name: aiops-grafana
     ports:
       - "3000:3000"
+    environment:
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+    volumes:
+      - grafana-storage:/var/lib/grafana
     depends_on:
       - postgres-db
       - influxdb
+
+volumes:
+  grafana-storage:
+    driver: local

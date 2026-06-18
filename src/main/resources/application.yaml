@@ -23,3 +23,7 @@ influxdb:
   token: my-super-secret-token
   org: my-org
   bucket: metrics-bucket
+
+aiops:
+  target:
+    hostname: KCiemiegaTB16

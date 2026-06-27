@@ -1,0 +1,183 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SelfHealingService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.kamil.aiops.service</a>
+</div>
+
+<h1>Coverage Summary for Class: SelfHealingService (com.kamil.aiops.service)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SelfHealingService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (10/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (25/25)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.kamil.aiops.service;
+&nbsp;
+&nbsp;import org.slf4j.Logger;
+&nbsp;import org.slf4j.LoggerFactory;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;
+&nbsp;@Service
+&nbsp;public class SelfHealingService {
+&nbsp;
+<b class="fc">&nbsp;    private static final Logger logger = LoggerFactory.getLogger(SelfHealingService.class);</b>
+&nbsp;
+&nbsp;    private final String osName;
+&nbsp;    private final Runtime runtime;
+&nbsp;
+<b class="fc">&nbsp;    public SelfHealingService() {</b>
+<b class="fc">&nbsp;        this.osName = System.getProperty(&quot;os.name&quot;).toLowerCase();</b>
+<b class="fc">&nbsp;        this.runtime = Runtime.getRuntime();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    // Konstruktor używany wyłącznie przez testy jednostkowe do mockowania środowiska OS
+<b class="fc">&nbsp;    public SelfHealingService(String osName, Runtime runtime) {</b>
+<b class="fc">&nbsp;        this.osName = osName.toLowerCase();</b>
+<b class="fc">&nbsp;        this.runtime = runtime;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void executeMitigation(String anomalyType, String host) {
+<b class="fc">&nbsp;        logger.info(&quot;[SELF-HEALING] Initiating automated response for: {} on host: {}&quot;, anomalyType, host);</b>
+<b class="fc">&nbsp;        if (&quot;Memory leak confirmed!&quot;.equals(anomalyType)) {</b>
+<b class="fc">&nbsp;            clearSystemCache();</b>
+<b class="fc">&nbsp;        } else if (&quot;CPU Spike detected!&quot;.equals(anomalyType)) {</b>
+<b class="fc">&nbsp;            optimizeProcessPriority();</b>
+&nbsp;        } else {
+<b class="fc">&nbsp;            logger.warn(&quot;[SELF-HEALING] Unknown anomaly type. No action taken.&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void clearSystemCache() {
+<b class="fc">&nbsp;        logger.info(&quot;[SELF-HEALING] Action: Clearing system application cache...&quot;);</b>
+&nbsp;        try {
+&nbsp;            Process process;
+<b class="fc">&nbsp;            if (osName.contains(&quot;win&quot;)) {</b>
+<b class="fc">&nbsp;                process = runtime.exec(&quot;cmd.exe /c echo Mitigating memory pressure...&quot;);</b>
+&nbsp;            } else {
+<b class="fc">&nbsp;                process = runtime.exec(&quot;echo Mitigating memory pressure...&quot;);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            int exitCode = process.waitFor();</b>
+<b class="fc">&nbsp;            if (exitCode == 0) {</b>
+<b class="fc">&nbsp;                logger.info(&quot;[SELF-HEALING] Success: Cache cleared successfully.&quot;);</b>
+&nbsp;            } else {
+<b class="fc">&nbsp;                logger.error(&quot;[SELF-HEALING] Failure: Mitigation script exited with code {}&quot;, exitCode);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        } catch (IOException | InterruptedException e) {
+<b class="fc">&nbsp;            logger.error(&quot;[SELF-HEALING] Error executing self-healing script&quot;, e);</b>
+<b class="fc">&nbsp;            if (e instanceof InterruptedException) {</b>
+<b class="fc">&nbsp;                Thread.currentThread().interrupt();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void optimizeProcessPriority() {
+<b class="fc">&nbsp;        logger.info(&quot;[SELF-HEALING] Action: Throttling non-essential background processes...&quot;);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-06-27 13:22</div>
+</div>
+</body>
+</html>

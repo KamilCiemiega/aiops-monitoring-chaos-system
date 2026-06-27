@@ -1,0 +1,201 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > HoltWintersPredictionService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.kamil.aiops.service.analysis</a>
+</div>
+
+<h1>Coverage Summary for Class: HoltWintersPredictionService (com.kamil.aiops.service.analysis)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">HoltWintersPredictionService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (14/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (35/35)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.kamil.aiops.service.analysis;
+&nbsp;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;@Service
+<b class="fc">&nbsp;public class HoltWintersPredictionService {</b>
+&nbsp;
+&nbsp;    // Smoothing parameters (can be extracted to application.yaml for easier tuning later)
+&nbsp;    private static final double ALPHA = 0.3; // Data smoothing factor
+&nbsp;    private static final double BETA = 0.1;  // Trend smoothing factor
+&nbsp;    private static final double GAMMA = 0.2; // Seasonal smoothing factor
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Generates a forecast using the Additive Holt-Winters method.
+&nbsp;     *
+&nbsp;     * @param data The historical time-series data (e.g., CPU or RAM usage)
+&nbsp;     * @param period The length of the seasonal cycle (e.g., 10 for a 10-second repeating pattern)
+&nbsp;     * @param forecastLength The number of future points to predict
+&nbsp;     * @return A list of predicted future values
+&nbsp;     */
+&nbsp;    public List&lt;Double&gt; predict(List&lt;Double&gt; data, int period, int forecastLength) {
+<b class="fc">&nbsp;        if (data == null || data.size() &lt; 2 * period) {</b>
+<b class="fc">&nbsp;            log.warn(&quot;Not enough data to perform Holt-Winters prediction. Need at least 2 full periods.&quot;);</b>
+<b class="fc">&nbsp;            return new ArrayList&lt;&gt;();</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        int n = data.size();</b>
+<b class="fc">&nbsp;        double[] level = new double[n];</b>
+<b class="fc">&nbsp;        double[] trend = new double[n];</b>
+<b class="fc">&nbsp;        double[] season = new double[n + forecastLength];</b>
+&nbsp;
+&nbsp;        // 1. Initialization
+<b class="fc">&nbsp;        level[0] = data.getFirst();</b>
+<b class="fc">&nbsp;        trend[0] = calculateInitialTrend(data, period);</b>
+<b class="fc">&nbsp;        for (int i = 0; i &lt; period; i++) {</b>
+<b class="fc">&nbsp;            season[i] = data.get(i) - level[0];</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // 2. Holt-Winters Additive Algorithm Calculation
+<b class="fc">&nbsp;        for (int t = 1; t &lt; n; t++) {</b>
+<b class="fc">&nbsp;            double val = data.get(t);</b>
+<b class="fc">&nbsp;            double prevLevel = level[t - 1];</b>
+<b class="fc">&nbsp;            double prevTrend = trend[t - 1];</b>
+<b class="fc">&nbsp;            double prevSeason = (t &gt;= period) ? season[t - period] : season[t];</b>
+&nbsp;
+&nbsp;            // Update components based on the mathematical equations
+<b class="fc">&nbsp;            level[t] = ALPHA * (val - prevSeason) + (1 - ALPHA) * (prevLevel + prevTrend);</b>
+<b class="fc">&nbsp;            trend[t] = BETA * (level[t] - prevLevel) + (1 - BETA) * prevTrend;</b>
+<b class="fc">&nbsp;            season[t] = GAMMA * (val - level[t]) + (1 - GAMMA) * prevSeason;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // 3. Forecasting future values
+<b class="fc">&nbsp;        List&lt;Double&gt; predictions = new ArrayList&lt;&gt;();</b>
+<b class="fc">&nbsp;        double lastLevel = level[n - 1];</b>
+<b class="fc">&nbsp;        double lastTrend = trend[n - 1];</b>
+&nbsp;
+<b class="fc">&nbsp;        for (int m = 1; m &lt;= forecastLength; m++) {</b>
+<b class="fc">&nbsp;            int seasonIndex = (n - 1) - period + 1 + ((m - 1) % period);</b>
+<b class="fc">&nbsp;            double forecast = lastLevel + (m * lastTrend) + season[seasonIndex];</b>
+&nbsp;
+&nbsp;            // Ensure percentages don&#39;t go below 0% or above 100%
+<b class="fc">&nbsp;            forecast = Math.clamp(forecast, 0.0, 100.0);</b>
+<b class="fc">&nbsp;            predictions.add(forecast);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        log.debug(&quot;Generated {} forecasted points using Holt-Winters algorithm.&quot;, forecastLength);</b>
+<b class="fc">&nbsp;        return predictions;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Helper method to calculate the initial trend estimation.
+&nbsp;     */
+&nbsp;    private double calculateInitialTrend(List&lt;Double&gt; data, int period) {
+<b class="fc">&nbsp;        double trend = 0.0;</b>
+<b class="fc">&nbsp;        for (int i = 0; i &lt; period; i++) {</b>
+<b class="fc">&nbsp;            trend += (data.get(period + i) - data.get(i)) / period;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return trend / period;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-06-27 13:22</div>
+</div>
+</body>
+</html>

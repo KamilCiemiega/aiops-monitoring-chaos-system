@@ -1,0 +1,193 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AnomalyDetectionScheduler</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.kamil.aiops.service.scheduler</a>
+</div>
+
+<h1>Coverage Summary for Class: AnomalyDetectionScheduler (com.kamil.aiops.service.scheduler)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AnomalyDetectionScheduler</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    93.8%
+  </span>
+  <span class="absValue">
+    (15/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (27/27)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.kamil.aiops.service.scheduler;
+&nbsp;
+&nbsp;import com.kamil.aiops.service.MetricsService;
+&nbsp;import com.kamil.aiops.service.SelfHealingService;
+&nbsp;import com.kamil.aiops.service.analysis.DataDriftDetectionService;
+&nbsp;import lombok.RequiredArgsConstructor;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.beans.factory.annotation.Value;
+&nbsp;import org.springframework.messaging.simp.SimpMessagingTemplate;
+&nbsp;import org.springframework.scheduling.annotation.Scheduled;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;@Service
+&nbsp;@RequiredArgsConstructor
+&nbsp;public class AnomalyDetectionScheduler {
+&nbsp;
+&nbsp;    private final MetricsService metricsService;
+&nbsp;    private final DataDriftDetectionService dataDriftDetectionService;
+&nbsp;    private final SimpMessagingTemplate messagingTemplate;
+&nbsp;    private final SelfHealingService selfHealingService;
+&nbsp;
+&nbsp;    @Value(&quot;${aiops.target.hostname:unknown-host}&quot;)
+&nbsp;    private String targetHostname;
+&nbsp;
+&nbsp;    @Scheduled(fixedRate = 15000)
+&nbsp;    public void runAnomalyDetection() {
+<b class="fc">&nbsp;        log.debug(&quot;Starting scheduled anomaly detection cycle for host: {}&quot;, targetHostname);</b>
+&nbsp;
+<b class="fc">&nbsp;        List&lt;Double&gt; recentRamUsage = metricsService.getRecentRamUsage(targetHostname);</b>
+&nbsp;
+<b class="fc">&nbsp;        if (recentRamUsage.isEmpty()) {</b>
+<b class="fc">&nbsp;            log.warn(&quot;No telemetry data found for host: {}. Skipping analysis.&quot;, targetHostname);</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        double actualCurrentRam = recentRamUsage.get(recentRamUsage.size() - 1);</b>
+<b class="fc">&nbsp;        Double predictedRam = metricsService.getLatestPrediction(targetHostname, &quot;ram_usage_prediction&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;        if (predictedRam == null) {</b>
+<b class="fc">&nbsp;            predictedRam = actualCurrentRam;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        double mean = recentRamUsage.stream().mapToDouble(d -&gt; d).average().orElse(0.0);</b>
+<b class="fc">&nbsp;        double variance = recentRamUsage.stream().mapToDouble(d -&gt; Math.pow(d - mean, 2)).sum() / recentRamUsage.size();</b>
+<b class="fc">&nbsp;        double stdDev = Math.sqrt(variance);</b>
+&nbsp;
+<b class="fc">&nbsp;        double threshold = 3.0 * stdDev;</b>
+<b class="fc">&nbsp;        double currentDeviation = Math.abs(actualCurrentRam - predictedRam);</b>
+&nbsp;
+<b class="fc">&nbsp;        log.info(&quot;📊 [AIOps Engine] Actual: {}, Predicted: {}, Current Deviation: {}, Allowed Threshold (3σ): {}&quot;,</b>
+<b class="fc">&nbsp;                actualCurrentRam, predictedRam, currentDeviation, threshold);</b>
+&nbsp;
+<b class="fc">&nbsp;        boolean isLeaking = dataDriftDetectionService.detectMemoryLeak(recentRamUsage);</b>
+<b class="pc">&nbsp;        boolean isAnomalousJump = currentDeviation &gt; threshold &amp;&amp; threshold &gt; 0.1;</b>
+&nbsp;
+<b class="fc">&nbsp;        if (isLeaking || isAnomalousJump) {</b>
+<b class="fc">&nbsp;            log.warn(&quot;🚨 CRITICAL ALERT: Dynamic threshold breached! Reason: {}&quot;,</b>
+<b class="fc">&nbsp;                    isAnomalousJump ? &quot;Prediction mismatch&quot; : &quot;Data drift detected&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;            String alertMessage = isAnomalousJump ? &quot;Unexpected RAM spike deviating from Holt-Winters forecast!&quot; : &quot;Memory leak confirmed!&quot;;</b>
+<b class="fc">&nbsp;            String jsonAlert = String.format(</b>
+&nbsp;                    &quot;{\&quot;host\&quot;: \&quot;%s\&quot;, \&quot;status\&quot;: \&quot;CRITICAL\&quot;, \&quot;message\&quot;: \&quot;%s\&quot;}&quot;,
+&nbsp;                    targetHostname, alertMessage
+&nbsp;            );
+<b class="fc">&nbsp;            messagingTemplate.convertAndSend(&quot;/topic/alerts&quot;, jsonAlert);</b>
+<b class="fc">&nbsp;            log.info(&quot;📢 Alert pushed via WebSocket channel /topic/alerts&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;            selfHealingService.executeMitigation(alertMessage, targetHostname);</b>
+&nbsp;
+&nbsp;        } else {
+<b class="fc">&nbsp;            log.debug(&quot;Infrastructure health is nominal for host: {}&quot;, targetHostname);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-06-27 13:22</div>
+</div>
+</body>
+</html>

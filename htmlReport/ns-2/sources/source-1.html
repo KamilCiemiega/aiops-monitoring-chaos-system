@@ -1,0 +1,185 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DataDriftDetectionService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.kamil.aiops.service.analysis</a>
+</div>
+
+<h1>Coverage Summary for Class: DataDriftDetectionService (com.kamil.aiops.service.analysis)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DataDriftDetectionService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    90%
+  </span>
+  <span class="absValue">
+    (9/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    96.4%
+  </span>
+  <span class="absValue">
+    (27/28)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.kamil.aiops.service.analysis;
+&nbsp;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;@Service
+<b class="fc">&nbsp;public class DataDriftDetectionService {</b>
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Threshold for memory leak detection.
+&nbsp;     * If the slope (trend) is consistently above this value, it indicates a leak.
+&nbsp;     */
+&nbsp;    private static final double LEAK_THRESHOLD = 0.05;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Analyzes a list of RAM usage data points to detect data drift (Memory Leak).
+&nbsp;     * Uses Simple Linear Regression to calculate the trend slope.
+&nbsp;     * * @param ramUsageHistory A list of recent RAM usage percentages.
+&nbsp;     * @return true if a memory leak is detected, false otherwise.
+&nbsp;     */
+&nbsp;    public boolean detectMemoryLeak(List&lt;Double&gt; ramUsageHistory) {
+<b class="fc">&nbsp;        if (ramUsageHistory == null || ramUsageHistory.size() &lt; 2) {</b>
+<b class="fc">&nbsp;            log.debug(&quot;Not enough data points to calculate drift.&quot;);</b>
+<b class="fc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        double slope = calculateLinearRegressionSlope(ramUsageHistory);</b>
+<b class="fc">&nbsp;        log.info(&quot;Calculated RAM drift slope: {}&quot;, slope);</b>
+&nbsp;
+<b class="fc">&nbsp;        if (slope &gt; LEAK_THRESHOLD) {</b>
+<b class="fc">&nbsp;            log.warn(&quot;🚨 MEMORY LEAK DETECTED! The RAM usage trend is growing unnaturally.&quot;);</b>
+<b class="fc">&nbsp;            return true;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    private double calculateLinearRegressionSlope(List&lt;Double&gt; yValues) {
+<b class="fc">&nbsp;        int n = yValues.size();</b>
+<b class="fc">&nbsp;        double sumX = 0;</b>
+<b class="fc">&nbsp;        double sumY = 0;</b>
+<b class="fc">&nbsp;        double sumXY = 0;</b>
+<b class="fc">&nbsp;        double sumX2 = 0;</b>
+&nbsp;
+<b class="fc">&nbsp;        for (int i = 0; i &lt; n; i++) {</b>
+&nbsp;
+<b class="fc">&nbsp;            double x = i;</b>
+<b class="fc">&nbsp;            double y = yValues.get(i);</b>
+&nbsp;
+<b class="fc">&nbsp;            sumX += x;</b>
+<b class="fc">&nbsp;            sumY += y;</b>
+<b class="fc">&nbsp;            sumXY += x * y;</b>
+<b class="fc">&nbsp;            sumX2 += x * x;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        double numerator = (n * sumXY) - (sumX * sumY);</b>
+<b class="fc">&nbsp;        double denominator = (n * sumX2) - (sumX * sumX);</b>
+&nbsp;
+<b class="pc">&nbsp;        if (denominator == 0) {</b>
+<b class="nc">&nbsp;            return 0.0;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return numerator / denominator;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-06-27 13:22</div>
+</div>
+</body>
+</html>

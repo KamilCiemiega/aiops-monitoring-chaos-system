@@ -4,14 +4,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+
 @Service
 public class SelfHealingService {
 
     private static final Logger logger = LoggerFactory.getLogger(SelfHealingService.class);
 
+    private final String osName;
+    private final Runtime runtime;
+
+    public SelfHealingService() {
+        this.osName = System.getProperty("os.name").toLowerCase();
+        this.runtime = Runtime.getRuntime();
+    }
+
+    // Konstruktor używany wyłącznie przez testy jednostkowe do mockowania środowiska OS
+    public SelfHealingService(String osName, Runtime runtime) {
+        this.osName = osName.toLowerCase();
+        this.runtime = runtime;
+    }
+
     public void executeMitigation(String anomalyType, String host) {
         logger.info("[SELF-HEALING] Initiating automated response for: {} on host: {}", anomalyType, host);
-
         if ("Memory leak confirmed!".equals(anomalyType)) {
             clearSystemCache();
         } else if ("CPU Spike detected!".equals(anomalyType)) {
@@ -24,13 +39,11 @@ public class SelfHealingService {
     private void clearSystemCache() {
         logger.info("[SELF-HEALING] Action: Clearing system application cache...");
         try {
-            String os = System.getProperty("os.name").toLowerCase();
             Process process;
-
-            if (os.contains("win")) {
-                process = Runtime.getRuntime().exec("cmd.exe /c echo Mitigating memory pressure...");
+            if (osName.contains("win")) {
+                process = runtime.exec("cmd.exe /c echo Mitigating memory pressure...");
             } else {
-                process = Runtime.getRuntime().exec("echo Mitigating memory pressure...");
+                process = runtime.exec("echo Mitigating memory pressure...");
             }
 
             int exitCode = process.waitFor();
@@ -40,8 +53,11 @@ public class SelfHealingService {
                 logger.error("[SELF-HEALING] Failure: Mitigation script exited with code {}", exitCode);
             }
 
-        } catch (Exception e) {
+        } catch (IOException | InterruptedException e) {
             logger.error("[SELF-HEALING] Error executing self-healing script", e);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 

@@ -35,7 +35,7 @@ public class HoltWintersPredictionService {
         double[] season = new double[n + forecastLength];
 
         // 1. Initialization
-        level[0] = data.get(0);
+        level[0] = data.getFirst();
         trend[0] = calculateInitialTrend(data, period);
         for (int i = 0; i < period; i++) {
             season[i] = data.get(i) - level[0];
@@ -64,7 +64,7 @@ public class HoltWintersPredictionService {
             double forecast = lastLevel + (m * lastTrend) + season[seasonIndex];
 
             // Ensure percentages don't go below 0% or above 100%
-            forecast = Math.max(0.0, Math.min(100.0, forecast));
+            forecast = Math.clamp(forecast, 0.0, 100.0);
             predictions.add(forecast);
         }
 

@@ -1,4 +1,4 @@
-# Autonomous Monitoring & Chaos Engineering Platform (AIOps Core)
+<img width="1630" height="921" alt="cpuUsageCritical" src="https://github.com/user-attachments/assets/e00c9e64-f456-4118-955a-d032418cd6a2" /># Autonomous Monitoring & Chaos Engineering Platform (AIOps Core)
 
 A distributed, autonomous IT infrastructure monitoring platform that leverages advanced AIOps analytics and a closed-loop **MAPE-K** self-healing mechanism, integrated with a Chaos Engineering injection engine.
 
@@ -52,15 +52,22 @@ The following production-simulation charts showcase the analytics engine in acti
 
 ### Scenario A: Memory Leak Identification (RAM Data Drift)
 * **Critical State (Anomaly Detected):** The regression slope violates the safety threshold ($a > 0.05$), flipping the status to `critical`.
-
+* 
+<img width="1429" height="840" alt="ramUsageCritical" src="https://github.com/user-attachments/assets/db8d62e5-51bb-4bdd-9995-3fd9905f6015" />
 
 * **Nominal State (Post Self-Healing):** The agent flushes caches and reallocates process groups, instantly shifting the container back to `nominal`.
-  
+* 
+  <img width="1444" height="825" alt="ramUsageNominalBack" src="https://github.com/user-attachments/assets/5ca09156-508c-465b-9bd1-307d61f8bb74" />
 
 ### Scenario B: Dynamic CPU Spike Detection
 * **Critical State (Corridor Breach):** A high-intensity processing load breaches the dynamic $3\sigma$ confidence interval calculated by the Holt-Winters algorithm.
 
+  <img width="1630" height="921" alt="cpuUsageCritical" src="https://github.com/user-attachments/assets/9a41040c-98e8-4cfd-b0ae-abe25a219853" />
+
+
 * **Nominal State (Post Self-Healing):** High-priority process throttling successfully normalizes core temperatures and utilization.
+
+<img width="1635" height="825" alt="cpuUsageNominalBack" src="https://github.com/user-attachments/assets/f0ca463c-471c-4ed4-a469-3a23aee8e96b" />
 
 
 ## Validation & Test Results
@@ -69,6 +76,10 @@ The framework has been fully validated through rigorous automated and empirical 
 
 ### 1. Automated Unit Testing (JUnit 5 & Mockito)
 Ensures zero-regression execution of math modules on isolated data matrices:
+<img width="1085" height="204" alt="analysys" src="https://github.com/user-attachments/assets/cc7f31d0-1c0e-436e-bf5c-e3a3c5ba4698" />
+
+<img width="1111" height="207" alt="scheduler" src="https://github.com/user-attachments/assets/714ea8ce-be63-447d-bcaa-64ce6c46eeca" />
+
 
 ## Deployment
 

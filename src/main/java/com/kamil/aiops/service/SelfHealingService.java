@@ -19,7 +19,6 @@ public class SelfHealingService {
         this.runtime = Runtime.getRuntime();
     }
 
-    // Konstruktor używany wyłącznie przez testy jednostkowe do mockowania środowiska OS
     public SelfHealingService(String osName, Runtime runtime) {
         this.osName = osName.toLowerCase();
         this.runtime = runtime;
@@ -27,9 +26,12 @@ public class SelfHealingService {
 
     public void executeMitigation(String anomalyType, String host) {
         logger.info("[SELF-HEALING] Initiating automated response for: {} on host: {}", anomalyType, host);
-        if ("Memory leak confirmed!".equals(anomalyType)) {
+
+        String lowerAnomaly = anomalyType.toLowerCase();
+
+        if (lowerAnomaly.contains("memory leak") || lowerAnomaly.contains("ram")) {
             clearSystemCache();
-        } else if ("CPU Spike detected!".equals(anomalyType)) {
+        } else if (lowerAnomaly.contains("cpu spike") || lowerAnomaly.contains("cpu")) {
             optimizeProcessPriority();
         } else {
             logger.warn("[SELF-HEALING] Unknown anomaly type. No action taken.");
@@ -38,17 +40,26 @@ public class SelfHealingService {
 
     private void clearSystemCache() {
         logger.info("[SELF-HEALING] Action: Clearing system application cache...");
+        executeMockCommand("Mitigating memory pressure...");
+    }
+
+    private void optimizeProcessPriority() {
+        logger.info("[SELF-HEALING] Action: Throttling non-essential background processes...");
+        executeMockCommand("Mitigating CPU pressure by balancing process priority...");
+    }
+
+    private void executeMockCommand(String echoMessage) {
         try {
             Process process;
             if (osName.contains("win")) {
-                process = runtime.exec("cmd.exe /c echo Mitigating memory pressure...");
+                process = runtime.exec("cmd.exe /c echo " + echoMessage);
             } else {
-                process = runtime.exec("echo Mitigating memory pressure...");
+                process = runtime.exec("echo " + echoMessage);
             }
 
             int exitCode = process.waitFor();
             if (exitCode == 0) {
-                logger.info("[SELF-HEALING] Success: Cache cleared successfully.");
+                logger.info("[SELF-HEALING] Success: Mitigation action executed successfully.");
             } else {
                 logger.error("[SELF-HEALING] Failure: Mitigation script exited with code {}", exitCode);
             }
@@ -59,9 +70,5 @@ public class SelfHealingService {
                 Thread.currentThread().interrupt();
             }
         }
-    }
-
-    private void optimizeProcessPriority() {
-        logger.info("[SELF-HEALING] Action: Throttling non-essential background processes...");
     }
 }

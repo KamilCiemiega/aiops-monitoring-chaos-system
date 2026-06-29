@@ -1,51 +1,98 @@
-# AIOps Monitoring & Chaos Engineering System
+# Autonomous Monitoring & Chaos Engineering Platform (AIOps Core)
 
-## 🎓 Engineering Thesis Project
-An intelligent, high-availability monitoring ecosystem designed for proactive server infrastructure diagnostics using statistical anomaly detection and controlled fault injection.
+A distributed, autonomous IT infrastructure monitoring platform that leverages advanced AIOps analytics and a closed-loop **MAPE-K** self-healing mechanism, integrated with a Chaos Engineering injection engine.
 
-## 🚀 Key Features
-- **Intelligent Diagnostics (AIOps)**: Three custom-implemented engines in Java:
+## Overview
 
-- **Linear Drift Detection** (Memory leak identification).
+The `monitoring-chaos-system` serves as the central orchestration, decision-making, and analytics core of the entire ecosystem. It shifts infrastructure management from reactive firefighting to proactive mitigation by predicting failures, detecting real-time anomalies, and autonomously correcting infrastructure state before a critical outage occurs.
 
-- **Cross-Metric Correlation** (Pearson correlation between system resources).
+### System Architecture
 
-- **Holt-Winters Forecasting** (Seasonal trend prediction).
+The platform employs a decoupled, multi-tier distributed architecture consisting of three core pillars:
 
-- **High Availability (HA):** Backend cluster with Nginx Load Balancer ensuring 99.9% uptime for the monitoring service.
+1. **Core Backend (Spring Boot):** The central engine managing time-series data pipelines, executing statistical algorithms, orchestrating alerts, and pushing asynchronous events via WebSockets.
+2. **Distributed Infrastructure Agents ([`aiops-agent`](./aiops-agent/)):** Lightweight daemons residing on target hosts that perform low-level resource sampling and execute corrective shell actions.
+3. **Control Panel Frontend ([`aiops-frontend`](./aiops-frontend/)):** A real-time React SPA providing deep observability, threshold management, and a centralized operations dashboard.
 
-- **Chaos Engineering Module:** Dedicated agents with a Chaos API for controlled simulation of failures (CPU stress, RAM leaks, network latency).
+```text
+                    ┌──────────────────────────────┐
+                    │        aiops-frontend        │
+                    │         (React SPA)          │
+                    └──────────────┬───────────────┘
+                                   │  ▲
+                     REST (Axios)  │  │  WebSockets (STOMP)
+                                   ▼  │
+                    ┌──────────────────────────────┐
+                    │    monitoring-chaos-system   │
+                    │     (Spring Boot Core)       │
+                    └──────────────┬───────────────┘
+                                   │  ▲
+                     Flux Queries  │  │  Line Protocol (HTTP)
+                                   ▼  │
+┌──────────────────────────────┐ ┌─┴──┴─────────────────────────┐
+│          InfluxDB            │ │         aiops-agent          │
+│    (Time Series Database)    │ │   (Chaos API & Self-Healing) │
+└──────────────────────────────┘ └──────────────────────────────┘
+```
 
-- **Real-time Telemetry:** Instant alert delivery via WebSockets (STOMP) and live data visualization.
+## AIOps Analytics Engine & MAPE-K Loop
 
-- **Hybrid Dashboard:** Custom React UI integrated with embedded Grafana panels.
+The platform closes the autonomous feedback loop using the **MAPE-K** (Monitor, Analyse, Plan, Execute, Knowledge) framework:
 
-## 🛠️ Tech Stack
-- **Backend:** Java 17, Spring Boot, Spring Security, WebSockets.
+* **Monitor:** `aiops-agent` samples hardware utilization from kernel interfaces (`/proc` and `cgroups`) and streams it directly into InfluxDB.
+* **Analyse:** The `AnomalyDetectionScheduler` runs asynchronous analytical routines:
+  * **Linear Regression (`DataDriftDetectionService`):** Captures slow-burning, long-term anomalies like memory leaks (*RAM drift*).
+  * **Triple Exponential Smoothing (`HoltWintersPredictionService`):** Models CPU utilization background noise, capturing seasonality and short-term trends.
+* **Plan:** The engine dynamically projects metrics and applies a Triple Standard Deviation ($3\sigma$) filter. If real-time metrics breach this dynamic corridor, a critical incident payload is generated.
+* **Execute:** `SelfHealingService` dispatches an asynchronous, non-blocking network payload to the agent to enforce immediate mitigation.
 
-- **Frontend:** React, TypeScript, Tailwind CSS, Grafana (Embedded).
+## Grafana Observability & Real-Time Metrics
 
-- **Data:** InfluxDB (Time-series), PostgreSQL (Relational).
+The following production-simulation charts showcase the analytics engine in action during a managed failure injection experiment:
 
-- **Infrastructure:** Docker, Docker Compose, Nginx (Load Balancing).
+### Scenario A: Memory Leak Identification (RAM Data Drift)
+* **Critical State (Anomaly Detected):** The regression slope violates the safety threshold ($a > 0.05$), flipping the status to `critical`.
 
-- **Analysis:** Custom Statistical Models (Holt-Winters, Pearson).
 
-## 🏗️ Architecture
-The system follows a distributed architecture orchestrated via Docker Compose:
+* **Nominal State (Post Self-Healing):** The agent flushes caches and reallocates process groups, instantly shifting the container back to `nominal`.
+  
 
-- **Agent Layer:** Lightweight containers simulating production nodes with telemetry exporters.
+### Scenario B: Dynamic CPU Spike Detection
+* **Critical State (Corridor Breach):** A high-intensity processing load breaches the dynamic $3\sigma$ confidence interval calculated by the Holt-Winters algorithm.
 
-- **Processing Layer:** Clustered Spring Boot instances analyzing incoming data streams.
+* **Nominal State (Post Self-Healing):** High-priority process throttling successfully normalizes core temperatures and utilization.
 
-- **Persistence Layer:** Optimized storage for high-frequency time-series data.
 
-- **Presentation Layer:** TypeScript-based dashboard for system management and fault injection.
-## 🧪 Testing & Validation
-The project includes a comprehensive test suite:
+## Validation & Test Results
 
-- **Unit Tests:** JUnit/Mockito for statistical algorithms.
+The framework has been fully validated through rigorous automated and empirical verification cycles.
 
-- **Integration Tests:** Validating InfluxDB data flow.
+### 1. Automated Unit Testing (JUnit 5 & Mockito)
+Ensures zero-regression execution of math modules on isolated data matrices:
 
-- **Chaos Scenarios:** End-to-end validation of anomaly detection under simulated stress.
+## Deployment
+
+### Prerequisites
+
+Ensure you have the following software installed on your local environment before executing the installation steps:
+
+* **Java 17 JDK** (required for running the Spring Boot backend)
+* **Node.js** (v18 or higher, required for compiling the React frontend)
+* **Docker & Docker Compose** (required to orchestrate InfluxDB and containerized environments)
+* **Bash** (required to execute low-level telemetry sampling scripts on the agent host)
+
+---
+
+### Installation & Quick Start
+
+Follow these terminal steps to clone the repository and launch the system components:
+
+```bash
+# Clone the repository
+git clone [https://github.com/your-username/monitoring-chaos-system.git](https://github.com/your-username/monitoring-chaos-system.git)
+
+# Navigate into the project root directory
+cd monitoring-chaos-system
+
+# Spin up the database and infrastructure containers in the background
+docker-compose up -d

@@ -1,5 +1,3 @@
-<img width="1630" height="921" alt="cpuUsageCritical" src="https://github.com/user-attachments/assets/e00c9e64-f456-4118-955a-d032418cd6a2" /># Autonomous Monitoring & Chaos Engineering Platform (AIOps Core)
-
 A distributed, autonomous IT infrastructure monitoring platform that leverages advanced AIOps analytics and a closed-loop **MAPE-K** self-healing mechanism, integrated with a Chaos Engineering injection engine.
 
 ## Overview
